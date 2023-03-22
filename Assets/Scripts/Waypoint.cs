@@ -17,6 +17,18 @@ public class Waypoint : MonoBehaviour
     public int id;
     public float speed = 10;
 
+    //MAX CHANGES
+    //Enum to track status of node
+    private enum nodeType
+    {
+        ENTRY,
+        EXIT,
+        NORM
+    };
+
+    [SerializeField] private nodeType type = nodeType.NORM; //By default is set to NORM
+
+
     private void OnDestroy()
     {
         manager.RemoveWaypoint(this);
