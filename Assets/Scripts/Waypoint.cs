@@ -11,6 +11,7 @@ public class Waypoint : MonoBehaviour
 {
     public List<int> successors = new();
     public List<int> predecessors = new();
+    public List<GameObject>[] pathToNext = new List<GameObject>[3]; //array of lists
     public Vector3 mousePos = new Vector3(0, 0, 0);
     public bool isSelected;
     public TrafficManager manager = null;
@@ -60,5 +61,9 @@ public class Waypoint : MonoBehaviour
         {
             Gizmos.DrawLine(position, mousePos);
         }
+    }
+
+    public List<Waypoint> GetSuccessorsWaypoints() {
+        return this.manager.GetSuccessors(this);
     }
 }
