@@ -11,11 +11,24 @@ public class Waypoint : MonoBehaviour
 {
     public List<int> successors = new();
     public List<int> predecessors = new();
+    public List<GameObject>[] pathToNext = new List<GameObject>[3]; //array of lists
     public Vector3 mousePos = new Vector3(0, 0, 0);
     public bool isSelected;
     public TrafficManager manager = null;
     public int id;
     public float speed = 10;
+
+    //MAX CHANGES
+    //Enum to track status of node
+    private enum nodeType
+    {
+        ENTRY,
+        EXIT,
+        NORM
+    };
+
+    [SerializeField] private nodeType type = nodeType.NORM; //By default is set to NORM
+
 
     private void OnDestroy()
     {
@@ -48,5 +61,9 @@ public class Waypoint : MonoBehaviour
         {
             Gizmos.DrawLine(position, mousePos);
         }
+    }
+
+    public List<Waypoint> GetSuccessorsWaypoints() {
+        return this.manager.GetSuccessors(this);
     }
 }
