@@ -87,6 +87,29 @@ public class TrafficController : MonoBehaviour
         return obj;
     }
 
+
+    public Boolean removeVehicle(int vehicleId)
+    {
+        int index = -1;
+
+        for(int i = 0; i < vehicles.Count; i++)
+        {
+            if(vehicles[i].id == vehicleId)
+            {
+                index = i;
+                break;
+            }
+        }
+
+        if (index != -1)
+        {
+            vehicles.RemoveAt(index);
+            return true;
+        }
+        return false;
+    }
+
+
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.Space))

@@ -107,6 +107,19 @@ public class MobileObject : MonoBehaviour
 
             if (distanceWithWp < 1)
             {
+                if (nextWp.carRemover)
+                {
+                    Debug.Log("IN HERE");
+                    //Then we want to destroy this object
+                    bool removedCar = controller.removeVehicle(this.id);
+
+                    if (removedCar)
+                    {
+                        Debug.Log("Removing Game Object");
+                        Destroy(gameObject); //Destroying game object
+                    }
+                }
+
                 currentIndex++;
                 tParam = 0;
                 speed = nextWp.speedLimit;
@@ -126,6 +139,13 @@ public class MobileObject : MonoBehaviour
                 path[currentIndex + 1].transform.position);
         } else
         {
+            //Checking to see if next waypoint is a remover
+            Waypoint currentWp = path[currentIndex];
+            Debug.Log(currentWp.carRemover);
+            
+
+
+
             //Path is finished and we need to create a new path
             from = path[currentIndex];
             setNewDestination();
