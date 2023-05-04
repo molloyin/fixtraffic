@@ -21,6 +21,9 @@ public class TrafficController : MonoBehaviour
     private int carPtr;
     private int yOffset = 20;
 
+    //Fields for spawning
+    private float spawnDelay = 10f; //In seconds
+
     private void Start()
     {
         random = new Random(simulationSeed);
@@ -31,6 +34,9 @@ public class TrafficController : MonoBehaviour
         mainCamera = Camera.main;
         mainCamera.enabled = true; //Enabling Camera
         carPtr = 0; //By default is 0 looking at car 0
+
+        //Lastly we want to spawn in the car Objects
+        this.spawnAllVehicles();
     }
 
     /**
@@ -109,6 +115,19 @@ public class TrafficController : MonoBehaviour
         return false;
     }
 
+    private void spawnAllVehicles()
+    {
+        Debug.Log("Spawning all Vehicles");
+        Waypoint[] waypoints = matrix.Vertices;
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if(waypoints[i].spawnType == Enums.SpawnType.Vehicle)
+            {
+                waypoints[i].SpawnRandomMobileObject();
+            }
+        }
+    }
+
 
     void Update()
     {
@@ -116,15 +135,28 @@ public class TrafficController : MonoBehaviour
         {
             if(this.carPtr < this.vehicles.Count-1)
             {
-                Debug.Log("Incrementing " + this.carPtr);
                 this.carPtr++; //Increment
             } else
             {
-                Debug.Log("Jump " + this.carPtr);
                 this.carPtr = 0; //Jump round to start
             }
         }
+
+        //When we press Q we want to stop the spawning
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("Stopping spawn");
+            CancelInvoke();
+        }
+
+        //When we press W we want to start the spawning
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            Debug.Log("Starting Spawn");
+            InvokeRepeating("spawnAllVehicles", 1f, spawnDelay); 
+        }
     }
+
 
     void FixedUpdate()
     {
@@ -132,16 +164,22 @@ public class TrafficController : MonoBehaviour
         {
             Vehicle vehiclePtr = this.vehicles[carPtr];
 
+            if(vehiclePtr != null)
+            {
 
-            //Now we want to set the cemeras position to the same x and z
-            //And increase the y
-            Vector3 newPosition = vehiclePtr.transform.position;
-            newPosition.y += this.yOffset;
-            this.mainCamera.transform.position = newPosition;
+                //Now we want to set the cemeras position to the same x and z
+                //And increase the y
+                Vector3 newPosition = vehiclePtr.transform.position;
+                newPosition.y += this.yOffset;
+                this.mainCamera.transform.position = newPosition;
+            }
 
         } else
         {
             //Place cemera in the sky ?
         }
+
+
+        //In the update function we also want to wait a specific amount of time and then we want to loop through the 
     }
 }

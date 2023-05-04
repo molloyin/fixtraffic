@@ -55,10 +55,13 @@ public class Waypoint : MatrixNode
         yield return new WaitUntil(() => controller.IsInitialized);
         if (spawnType is not SpawnType.None && !isDestination &&
             controller.destinationsWaypoints.Length > 0)
-            SpawnRandomMobileObject();
+        {
+            //SpawnRandomMobileObject(); //Will spawn an object on start DEPRICATED!!!!
+        }
+
     }
 
-    private void SpawnRandomMobileObject()
+    public void SpawnRandomMobileObject()
     {
         /*
         var destinations = new List<Waypoint>(controller.destinationsWaypoints);
@@ -91,7 +94,7 @@ public class Waypoint : MatrixNode
         var possibleDestinations = new List<Waypoint>(controller.destinationsWaypoints);
         if(spawnType is SpawnType.Vehicle)
         {
-            int spawnAmount = 1 ;
+            int spawnAmount = 1;
             for(int i = 0; i < spawnAmount; i++)
             {
                 System.Random randomNumberGen = new System.Random();
