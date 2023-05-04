@@ -22,7 +22,7 @@ public class TrafficController : MonoBehaviour
     private int yOffset = 20;
 
     //Fields for spawning
-    private float spawnDelay = 10f; //In seconds
+    private float spawnDelay = 5f; //In seconds
 
     private void Start()
     {
@@ -71,8 +71,24 @@ public class TrafficController : MonoBehaviour
     public GameObject AddVehicle(Waypoint _waypoint = null)
     {
         int id = vehicles.Count + 1;
-        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        Vehicle vehicle = obj.AddComponent<Vehicle>();
+
+        GameObject obj;
+        Vehicle vehicle;
+
+        //Now we want to choose if we are selecting a bus or a car
+        int randomNum = (random.Next()) % 10;
+        if(randomNum < 7) //If less then 7 we want to make a car
+        {
+            obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            vehicle = obj.AddComponent<Vehicle>();
+            vehicle.vehicleType = Enums.VehicleType.Car;
+        } else //We want to make a bus
+        {
+            obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            vehicle = obj.AddComponent<Vehicle>();
+            vehicle.vehicleType = Enums.VehicleType.Bus;
+        }
+
         obj.layer = LayerMask.NameToLayer("MobileObject");
         obj.name = "Vehicle " + id;
         if (_waypoint != null)

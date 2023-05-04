@@ -40,12 +40,36 @@ public class MobileObject : MonoBehaviour
 
     private float sportiness = 0;
 
-    private new SphereCollider collider;
+    private new Collider collider;
 
     [SerializeField] private bool isStopped = false;
 
+    //Type of vehicle
+    public VehicleType vehicleType;
+
+
     void Start()
     {
+        //Setting up vehicle type first
+        if(this.vehicleType == VehicleType.Bus) //If vehicle is Bus
+        {
+            Debug.Log("BUS");
+            collider = GetComponent<BoxCollider>();
+            sportiness = 0.5f; //Half speed
+            ((BoxCollider)collider).size = new Vector3(1.5f, 1.5f, 1.5f);
+        } else //We assume it is a car
+        {
+            Debug.Log("CAR");
+            collider = GetComponent<SphereCollider>();
+            //sportiness = controller.random.Next(10, 100) / 100f;
+            sportiness = 1f; //Normal speed
+            ((SphereCollider)collider).radius = 1.5f;
+        }
+        Rigidbody rigidBody = this.AddComponent<Rigidbody>();
+        rigidBody.useGravity = false;
+        collider.isTrigger = true;
+
+        //Setting path and speed
         // Set the initial position to the starting waypoint
         // and generate the path
         transform.position = from.transform.position;
@@ -54,16 +78,9 @@ public class MobileObject : MonoBehaviour
         path = FindShortestPath();
         if (path.Length > 0)
         {
-            speed = path[0].speedLimit;
+            speed = path[0].speedLimit * sportiness;
             baseSpeed = speed;
         }
-
-        collider = GetComponent<SphereCollider>();
-        sportiness = controller.random.Next(10, 100) / 100f;
-        collider.isTrigger = true;
-        collider.radius = 1.5f;
-        Rigidbody rigidBody = this.AddComponent<Rigidbody>();
-        rigidBody.useGravity = false;
     }
 
 
@@ -122,7 +139,7 @@ public class MobileObject : MonoBehaviour
 
                 currentIndex++;
                 tParam = 0;
-                speed = nextWp.speedLimit;
+                speed = nextWp.speedLimit * sportiness; 
                 baseSpeed = speed;
             }
         }
