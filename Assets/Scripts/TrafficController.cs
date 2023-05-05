@@ -21,6 +21,10 @@ public class TrafficController : MonoBehaviour
     private int carPtr;
     private int yOffset = 20;
 
+    //Fields for spawning
+    private float spawnDelay = 5f; //In seconds
+    public bool defaultSpawnBehavior = false;
+
     private void Start()
     {
         random = new Random(simulationSeed);
@@ -61,61 +65,71 @@ public class TrafficController : MonoBehaviour
      * Add a new vehicle to the system.
      * @return The game object of the new vehicle.
      */
-    public GameObject AddVehicle(Waypoint _waypoint = null)
+    public GameObject AddVehicle(Waypoint waypoint = null)
+        => Vehicle.AddVehicle(this, waypoint);
+
+    void SpawnAllVehicles()
     {
-        int id = vehicles.Count + 1;
-        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        Vehicle vehicle = obj.AddComponent<Vehicle>();
-        obj.layer = LayerMask.NameToLayer("MobileObject");
-        obj.name = "Vehicle " + id;
-        if (_waypoint != null)
+        foreach (var matrixVertex in matrix.Vertices)
         {
-            obj.transform.position = _waypoint.transform.position;
-            obj.transform.parent = _waypoint.transform;
+            matrixVertex.SpawnMobileObject();
         }
-        else
-        {
-            obj.transform.position = transform.position;
-            obj.transform.parent = transform;
-        }
-
-        vehicle.id = id;
-        vehicle.controller = this;
-        vehicles.Add(vehicle);
-
-        return obj;
     }
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if(this.carPtr < this.vehicles.Count-1)
+            if (this.carPtr < this.vehicles.Count - 1)
             {
                 Debug.Log("Incrementing " + this.carPtr);
                 this.carPtr++; //Increment
-            } else
+            }
+            else
             {
                 Debug.Log("Jump " + this.carPtr);
                 this.carPtr = 0; //Jump round to start
             }
         }
+
+        //When we press Q we want to stop the spawning
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("Stopping spawn");
+            CancelInvoke();
+        }
+
+        //When we press W we want to start the spawning
+        if (Input.GetKeyDown(KeyCode.W) && !defaultSpawnBehavior)
+        {
+            Debug.Log("Starting spawn");
+            InvokeRepeating(nameof(SpawnAllVehicles), 1f, spawnDelay);
+        }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            CancelInvoke();
+            defaultSpawnBehavior = !defaultSpawnBehavior;
+            Debug.Log(
+                defaultSpawnBehavior ? "Waypoint default spawning behaviors enabled" : "Interval spawning enabled");
+            if (defaultSpawnBehavior) SpawnAllVehicles();
+        }
     }
-    
+
     void FixedUpdate()
     {
-        if(vehicles.Count > 0)
+        if (vehicles.Count > 0)
         {
             Vehicle vehiclePtr = this.vehicles[carPtr];
-    
-    
+
+
             //Now we want to set the cemeras position to the same x and z
             //And increase the y
             Vector3 newPosition = vehiclePtr.transform.position;
             newPosition.y += this.yOffset;
             this.mainCamera.transform.position = newPosition;
-    
-        } else
+        }
+        else
         {
             //Place cemera in the sky ?
         }

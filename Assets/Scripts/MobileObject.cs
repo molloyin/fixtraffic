@@ -38,18 +38,20 @@ public class MobileObject : MonoBehaviour
 
     [SerializeField] private float baseSpeed = 0;
 
-    private float sportiness = 0;
+    protected float sportiness = 0;
 
-    private new SphereCollider collider;
+    protected new Collider collider;
+
+    //Type of vehicle
+    public VehicleType vehicleType;
 
     [SerializeField] private bool isStopped = false;
 
-    void Start()
+    protected void Start()
     {
         // Set the initial position to the starting waypoint
         // and generate the path
         transform.position = from.transform.position;
-
 
         path = FindShortestPath();
         if (path.Length > 0)
@@ -58,10 +60,7 @@ public class MobileObject : MonoBehaviour
             baseSpeed = speed;
         }
 
-        collider = GetComponent<SphereCollider>();
-        sportiness = controller.random.Next(10, 100) / 100f;
         collider.isTrigger = true;
-        collider.radius = 1.5f;
         Rigidbody rigidBody = this.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
     }
@@ -84,13 +83,11 @@ public class MobileObject : MonoBehaviour
             float distanceWithWp = Vector3.Distance(transform.position, nextWp.transform.position);
 
             float dist = IsObjectInFront(out MobileObject mobileObject);
-
             if (mobileObject != null)
             {
                 if (dist < 1.5)
                 {
                     speed = mobileObject.speed;
-                    if (speed == 0) Debug.Log(transform.name);
                 }
                 else
                 {
@@ -104,7 +101,6 @@ public class MobileObject : MonoBehaviour
                     1, nextWp.speedLimit / baseSpeed);
             }
 
-
             if (distanceWithWp < 1)
             {
                 currentIndex++;
@@ -113,6 +109,8 @@ public class MobileObject : MonoBehaviour
                 baseSpeed = speed;
             }
         }
+
+        if (baseSpeed == 0 || float.IsNaN(speed)) return;
 
         if (currentIndex < path.Length - 1)
         {
@@ -124,14 +122,20 @@ public class MobileObject : MonoBehaviour
             transform.Translate(0, 0, speed * Time.deltaTime);
             tParam += Time.deltaTime * speed / Vector3.Distance(current.transform.position,
                 path[currentIndex + 1].transform.position);
-        } else
+        }
+        else
         {
             //Path is finished and we need to create a new path
-            from = path[currentIndex];
-            setNewDestination();
-            path = FindShortestPath();
-            currentIndex = 0;
-            
+            // from = path[currentIndex];
+            // SetNewDestination();
+            // path = FindShortestPath();
+            // currentIndex = 0;
+
+            if (this is Vehicle)
+            {
+                controller.vehicles.Remove((Vehicle) this);
+                DestroyImmediate(gameObject);
+            }
         }
     }
 
@@ -149,7 +153,7 @@ public class MobileObject : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
             isStopped = false;
     }
-
+    
     private float IsObjectInFront(out MobileObject mobileObject)
     {
         bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, 10f,
@@ -256,9 +260,8 @@ public class MobileObject : MonoBehaviour
     }
 
 
-
     //Method is used to get random destination and set it to the sink
-    private void setNewDestination()
+    private void SetNewDestination()
     {
         do
         {
