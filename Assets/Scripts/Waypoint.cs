@@ -37,6 +37,7 @@ public class Waypoint : MatrixNode
 
     // If this waypoint is a destination, the mobile object will be destroyed when it reaches this waypoint
     public bool isDestination;
+    public bool carRemover;
 
     // Spawn rate is used to determine the frequency of the mobile object spawning
     public float spawnRate = 50;
@@ -54,10 +55,13 @@ public class Waypoint : MatrixNode
         yield return new WaitUntil(() => controller.IsInitialized);
         if (spawnType is not SpawnType.None && !isDestination &&
             controller.destinationsWaypoints.Length > 0)
-            SpawnRandomMobileObject();
+        {
+            //SpawnRandomMobileObject(); //Will spawn an object on start DEPRICATED!!!!
+        }
+
     }
 
-    private void SpawnRandomMobileObject()
+    public void SpawnRandomMobileObject()
     {
         /*
         var destinations = new List<Waypoint>(controller.destinationsWaypoints);
@@ -90,7 +94,7 @@ public class Waypoint : MatrixNode
         var possibleDestinations = new List<Waypoint>(controller.destinationsWaypoints);
         if(spawnType is SpawnType.Vehicle)
         {
-            int spawnAmount = 1 ;
+            int spawnAmount = 1;
             for(int i = 0; i < spawnAmount; i++)
             {
                 System.Random randomNumberGen = new System.Random();
