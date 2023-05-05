@@ -85,7 +85,7 @@ public class MobileObject : MonoBehaviour
             float dist = IsObjectInFront(out MobileObject mobileObject);
             if (mobileObject != null)
             {
-                if (dist < 1.5)
+                if (dist < 2)
                 {
                     speed = mobileObject.speed;
                 }
@@ -138,7 +138,7 @@ public class MobileObject : MonoBehaviour
             }
         }
     }
-
+    
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
@@ -153,7 +153,7 @@ public class MobileObject : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
             isStopped = false;
     }
-    
+
     private float IsObjectInFront(out MobileObject mobileObject)
     {
         bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, 10f,

@@ -121,8 +121,8 @@ public class TrafficController : MonoBehaviour
         if (vehicles.Count > 0)
         {
             Vehicle vehiclePtr = this.vehicles[carPtr];
-
-
+    
+    
             //Now we want to set the cemeras position to the same x and z
             //And increase the y
             Vector3 newPosition = vehiclePtr.transform.position;

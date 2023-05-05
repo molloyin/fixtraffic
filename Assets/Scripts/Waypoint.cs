@@ -79,13 +79,13 @@ public class Waypoint : MatrixNode
                 vehicle.from = this;
                 vehicle.to = destinations[randomIndex];
 
-                if ((spawnBehavior is SpawnBehavior.Amount || controller.defaultSpawnBehavior) &&
+                if ((spawnBehavior is SpawnBehavior.Amount || !controller.defaultSpawnBehavior) &&
                     currentSpawnAmount > 1)
                 {
                     currentSpawnAmount -= 1;
                     Invoke(nameof(SpawnMobileObject), 1);
                 }
-                else if (spawnBehavior is SpawnBehavior.Interval && !controller.defaultSpawnBehavior)
+                else if (spawnBehavior is SpawnBehavior.Interval && controller.defaultSpawnBehavior)
                 {
                     spawnInterval = controller.random.Next((int) (100 - spawnRate), (int) (105 - spawnRate));
                     Invoke(nameof(SpawnMobileObject), spawnInterval);
