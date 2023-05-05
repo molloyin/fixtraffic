@@ -281,16 +281,24 @@ namespace Utils
             bool[] marks = new bool [Count];
             Stack<int> stack = new Stack<int>();
             stack.Push(_from.id);
+            marks[_from.id] = true;
             bool founded = false;
-
+            
             while (stack.Count > 0 && !founded)
             {
                 int visiting = stack.Pop();
                 if (visiting == _to.id)
                     founded = true;
-                else foreach (var successor in GetSuccessors(visiting))
+                else
+                    foreach (var successor in GetSuccessors(visiting))
+                    {
                         if (!marks[successor.id])
+                        {
                             stack.Push(successor.id);
+                            marks[successor.id] = true;
+                        }
+                    }
+
             }
 
             return founded;

@@ -40,36 +40,12 @@ public class MobileObject : MonoBehaviour
 
     private float sportiness = 0;
 
-    private new Collider collider;
+    private new SphereCollider collider;
 
     [SerializeField] private bool isStopped = false;
 
-    //Type of vehicle
-    public VehicleType vehicleType;
-
-
     void Start()
     {
-        //Setting up vehicle type first
-        if(this.vehicleType == VehicleType.Bus) //If vehicle is Bus
-        {
-            Debug.Log("BUS");
-            collider = GetComponent<BoxCollider>();
-            sportiness = 0.5f; //Half speed
-            ((BoxCollider)collider).size = new Vector3(1.5f, 1.5f, 1.5f);
-        } else //We assume it is a car
-        {
-            Debug.Log("CAR");
-            collider = GetComponent<SphereCollider>();
-            //sportiness = controller.random.Next(10, 100) / 100f;
-            sportiness = 1f; //Normal speed
-            ((SphereCollider)collider).radius = 1.5f;
-        }
-        Rigidbody rigidBody = this.AddComponent<Rigidbody>();
-        rigidBody.useGravity = false;
-        collider.isTrigger = true;
-
-        //Setting path and speed
         // Set the initial position to the starting waypoint
         // and generate the path
         transform.position = from.transform.position;
@@ -78,9 +54,16 @@ public class MobileObject : MonoBehaviour
         path = FindShortestPath();
         if (path.Length > 0)
         {
-            speed = path[0].speedLimit * sportiness;
+            speed = path[0].speedLimit;
             baseSpeed = speed;
         }
+
+        collider = GetComponent<SphereCollider>();
+        sportiness = controller.random.Next(10, 100) / 100f;
+        collider.isTrigger = true;
+        collider.radius = 1.5f;
+        Rigidbody rigidBody = this.AddComponent<Rigidbody>();
+        rigidBody.useGravity = false;
     }
 
 
@@ -124,22 +107,9 @@ public class MobileObject : MonoBehaviour
 
             if (distanceWithWp < 1)
             {
-                if (nextWp.carRemover)
-                {
-                    Debug.Log("IN HERE");
-                    //Then we want to destroy this object
-                    bool removedCar = controller.removeVehicle(this.id);
-
-                    if (removedCar)
-                    {
-                        Debug.Log("Removing Game Object");
-                        Destroy(gameObject); //Destroying game object
-                    }
-                }
-
                 currentIndex++;
                 tParam = 0;
-                speed = nextWp.speedLimit * sportiness; 
+                speed = nextWp.speedLimit;
                 baseSpeed = speed;
             }
         }
@@ -156,13 +126,6 @@ public class MobileObject : MonoBehaviour
                 path[currentIndex + 1].transform.position);
         } else
         {
-            //Checking to see if next waypoint is a remover
-            Waypoint currentWp = path[currentIndex];
-            Debug.Log(currentWp.carRemover);
-            
-
-
-
             //Path is finished and we need to create a new path
             from = path[currentIndex];
             setNewDestination();

@@ -37,33 +37,31 @@ public class Waypoint : MatrixNode
 
     // If this waypoint is a destination, the mobile object will be destroyed when it reaches this waypoint
     public bool isDestination;
-    public bool carRemover;
 
     // Spawn rate is used to determine the frequency of the mobile object spawning
     public float spawnRate = 50;
+
+    // Spawn amount is used to determine how many mobile objects will spawn
+    public int spawnAmount = 1;
+
+    // Spawn behavior is used to determine how to spawn the mobile objects
+    public SpawnBehavior spawnBehavior = SpawnBehavior.Amount;
+
+    // Spawn interval is used to determine the time between each spawn
     private float spawnInterval;
-
-
-    //FOR TESTING PURPOSES
-    private int spawnCount;
-    
+    private int currentSpawnAmount;
 
     private IEnumerator Start()
     {
-        speedLimit = 10f;
-
+        currentSpawnAmount = spawnAmount;
         yield return new WaitUntil(() => controller.IsInitialized);
         if (spawnType is not SpawnType.None && !isDestination &&
             controller.destinationsWaypoints.Length > 0)
-        {
-            //SpawnRandomMobileObject(); //Will spawn an object on start DEPRICATED!!!!
-        }
-
+            SpawnMobileObject();
     }
 
-    public void SpawnRandomMobileObject()
+    private void SpawnMobileObject()
     {
-        /*
         var destinations = new List<Waypoint>(controller.destinationsWaypoints);
         if (spawnType is SpawnType.Vehicle)
         {
@@ -81,36 +79,18 @@ public class Waypoint : MatrixNode
                 vehicle.from = this;
                 vehicle.to = destinations[randomIndex];
 
-                spawnInterval = controller.random.Next((int) (100 - spawnRate), (int) (105 - spawnRate));
-                Invoke(nameof(SpawnRandomMobileObject), spawnInterval);
+                if (spawnBehavior is SpawnBehavior.Amount && currentSpawnAmount > 1)
+                {
+                    currentSpawnAmount -= 1;
+                    Invoke(nameof(SpawnMobileObject), 1);
+                }
+                else if (spawnBehavior is SpawnBehavior.Interval)
+                {
+                    spawnInterval = controller.random.Next((int) (100 - spawnRate), (int) (105 - spawnRate));
+                    Invoke(nameof(SpawnMobileObject), spawnInterval);
+                }
             }
         }
-        */
-
-        //Spawning mobile object we want to have a spawn point. 
-        //Create the boejct and set a source based on the starting node
-        //Set a sink randomly based on the destination nodes
-        //Spawn the object
-        var possibleDestinations = new List<Waypoint>(controller.destinationsWaypoints);
-        if(spawnType is SpawnType.Vehicle)
-        {
-            int spawnAmount = 1;
-            for(int i = 0; i < spawnAmount; i++)
-            {
-                System.Random randomNumberGen = new System.Random();
-                int index = randomNumberGen.Next(possibleDestinations.Count);
-
-                Vehicle vehicle = controller.AddVehicle(this).GetComponent<Vehicle>();
-                vehicle.from = this;
-                vehicle.to = possibleDestinations[index];
-
-
-                //spawnInterval = controller.random.Next((int)(100 - spawnRate), (int)(105 - spawnRate));
-                //Invoke(nameof(SpawnRandomMobileObject), spawnInterval);
-                
-            }
-        }
-
     }
 
 
@@ -150,7 +130,7 @@ public class Waypoint : MatrixNode
         return pathBuilder.GetPositionOnCurve(_t);
     }
 
- 
+
     /// <summary>
     /// Detroy or create the path builders depending on the path type
     /// </summary>
@@ -213,14 +193,14 @@ public class Waypoint : MatrixNode
      * Draw an arrow between two points
      */
     private void DrawGizmoArrow(Vector3 _pos, Vector3 _direction, Color _color, float _arrowHeadLength = 0.25f,
-        float _arrowHeadAngle = 20.0f)
+        float arrowHeadAngle = 20.0f)
     {
         Gizmos.color = _color;
         Gizmos.DrawRay(_pos, _direction);
 
-        Vector3 right = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 + _arrowHeadAngle, 0) *
+        Vector3 right = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) *
                         new Vector3(0, 0, 1);
-        Vector3 left = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 - _arrowHeadAngle, 0) *
+        Vector3 left = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) *
                        new Vector3(0, 0, 1);
         Gizmos.DrawRay(_pos + _direction, right * _arrowHeadLength);
         Gizmos.DrawRay(_pos + _direction, left * _arrowHeadLength);

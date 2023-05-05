@@ -6,10 +6,4 @@ namespace Enums
         Vehicle,
         Pedestrian
     }
-
-    public enum VehicleType
-    {
-        Car,
-        Bus
-    }
 }
