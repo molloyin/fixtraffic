@@ -50,6 +50,8 @@ public class TrafficLights : MonoBehaviour
             DestroyImmediate(obj);
             return null;
         }
+        
+        controller.trafficLights.Add(tlComponent);
 
         return obj;
     }

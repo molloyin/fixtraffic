@@ -31,13 +31,13 @@ public class Vehicle : MobileObject
         int randomNum = controller.random.Next() % 10;
         if (randomNum < 7) //If less then 7 we want to make a car
         {
-            obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            obj = Instantiate(controller.vehicleModel);
             vehicle = obj.AddComponent<Vehicle>();
             vehicle.vehicleType = VehicleType.Car;
         }
         else //We want to make a bus
         {
-            obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            obj = Instantiate(controller.busModel);
             vehicle = obj.AddComponent<Vehicle>();
             vehicle.vehicleType = VehicleType.Bus;
         }
