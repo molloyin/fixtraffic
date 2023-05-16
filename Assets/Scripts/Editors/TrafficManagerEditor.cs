@@ -10,6 +10,7 @@ namespace Editors
         private SerializedProperty vehicles;
         private SerializedProperty matrix;
         private SerializedProperty simulationSeed;
+        private SerializedProperty vehicleModel;
 
         private void OnEnable()
         {
@@ -17,6 +18,7 @@ namespace Editors
             vehicles = serializedObject.FindProperty("vehicles");
             matrix = serializedObject.FindProperty("matrix");
             simulationSeed = serializedObject.FindProperty("simulationSeed");
+            vehicleModel = serializedObject.FindProperty("vehicleModel");
         }
 
         public override void OnInspectorGUI()
@@ -25,6 +27,7 @@ namespace Editors
             EditorGUILayout.PropertyField(vehicles);
             EditorGUILayout.PropertyField(matrix);
             EditorGUILayout.PropertyField(simulationSeed);
+            EditorGUILayout.PropertyField(vehicleModel);
             GUIStyle button = new GUIStyle(GUI.skin.button)
             {
                 normal =

@@ -31,6 +31,8 @@ public class Waypoint : MatrixNode
     // Speed is used to determine the speed of the mobile object when it moves from this waypoint to the next
     public float speedLimit = 10f;
 
+    [NonSerialized] public float currentSpeedLimit;
+
     // Spawn type is used to determine if a mobile object will spawn from this waypoint
     // and which type of mobile object will spawn
     public SpawnType spawnType = SpawnType.None;
@@ -51,13 +53,16 @@ public class Waypoint : MatrixNode
     private float spawnInterval;
     private int currentSpawnAmount;
 
+    [NonSerialized] public bool isStopped = true;
+    [NonSerialized] public bool isInTrafficLights;
+
     private IEnumerator Start()
     {
         currentSpawnAmount = spawnAmount;
+        isInTrafficLights = transform.parent.GetComponent<TrafficLights>() != null ||
+                            transform.parent.GetComponent<GroupLights>() != null;
+        currentSpeedLimit = isInTrafficLights ? 0 : speedLimit;
         yield return new WaitUntil(() => controller.IsInitialized);
-        // if (spawnType is not SpawnType.None && !isDestination &&
-        //     controller.destinationsWaypoints.Length > 0)
-        //     SpawnMobileObject();
     }
 
     public void SpawnMobileObject()
@@ -209,7 +214,7 @@ public class Waypoint : MatrixNode
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = isInTrafficLights && !isStopped ? Color.green : Color.red;
         var position = transform.position;
         Gizmos.DrawCube(position, new Vector3(1, 1, 1));
 

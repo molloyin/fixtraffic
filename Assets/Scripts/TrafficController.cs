@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Utils;
 using Random = System.Random;
@@ -11,10 +12,15 @@ using Random = System.Random;
 public class TrafficController : MonoBehaviour
 {
     public Matrix<Waypoint> matrix = new("Waypoint");
+
+    [SerializeField] public List<TrafficLights> trafficLights = new();
     [SerializeField] public List<Vehicle> vehicles = new();
+    [NonSerialized] public Waypoint[] destinationsWaypoints;
+    
+    public GameObject vehicleModel;
+    
     public int simulationSeed = Guid.NewGuid().GetHashCode();
     public Random random;
-    [NonSerialized] public Waypoint[] destinationsWaypoints;
     public bool IsInitialized { get; private set; }
 
     [SerializeField] Camera mainCamera; //Field for the camera
@@ -60,6 +66,9 @@ public class TrafficController : MonoBehaviour
 
         return obj;
     }
+
+    public GameObject AddTrafficLights()
+        => TrafficLights.Add(this);
 
     /**
      * Add a new vehicle to the system.
@@ -116,22 +125,22 @@ public class TrafficController : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
-    {
-        if (vehicles.Count > 0)
-        {
-            Vehicle vehiclePtr = this.vehicles[carPtr];
-    
-    
-            //Now we want to set the cemeras position to the same x and z
-            //And increase the y
-            Vector3 newPosition = vehiclePtr.transform.position;
-            newPosition.y += this.yOffset;
-            this.mainCamera.transform.position = newPosition;
-        }
-        else
-        {
-            //Place cemera in the sky ?
-        }
-    }
+    // void FixedUpdate()
+    // {
+    //     if (vehicles.Count > 0)
+    //     {
+    //         Vehicle vehiclePtr = this.vehicles[carPtr];
+    //
+    //
+    //         //Now we want to set the cemeras position to the same x and z
+    //         //And increase the y
+    //         Vector3 newPosition = vehiclePtr.transform.position;
+    //         newPosition.y += this.yOffset;
+    //         this.mainCamera.transform.position = newPosition;
+    //     }
+    //     else
+    //     {
+    //         //Place cemera in the sky ?
+    //     }
+    // }
 }
