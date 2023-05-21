@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+
 //Car Controller for player car
 public class CarController : MonoBehaviour
 {
@@ -31,6 +34,22 @@ public class CarController : MonoBehaviour
 
     public AudioSource engineSound;
 
+    public InputAction playerMovement;//pi
+    Vector2 moveDir = Vector2.zero;//pi
+
+    public float timer;
+
+    public void OnEnable()//pi
+    {
+        playerMovement.Enable();
+    }
+
+    public void OnDisable()//pi
+    {
+        playerMovement.Disable();
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,12 +57,20 @@ public class CarController : MonoBehaviour
 
         //set initial dragOnGround to Unity default
         this.dragOnGround = theRB.drag;
+
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        moveDir = playerMovement.ReadValue<Vector2>();//pi
+
         speedInput = 0f;
+
+        //working controls
+
+        /*//getAxis method
         if (Input.GetAxis("Vertical") > 0)
         {
             speedInput = Input.GetAxis("Vertical") * forwardAcceleration;
@@ -51,9 +78,29 @@ public class CarController : MonoBehaviour
         } else if(Input.GetAxis("Vertical") < 0)
         {
             speedInput = Input.GetAxis("Vertical") * reverseAcceleration;
+        }*/
+
+        //pi
+        if (moveDir[1] > 0)
+        {
+            speedInput = moveDir[1] * forwardAcceleration;
+
+        }
+        else if (moveDir[1] < 0)
+        {
+            speedInput = moveDir[1] * reverseAcceleration;
         }
 
-        turnInput = Input.GetAxis("Horizontal");
+
+        /*
+         changing control code         
+         */
+
+
+
+        //turnInput = Input.GetAxis("Horizontal");//getAxis method
+        turnInput = moveDir[0];//pi
+
         /*
         if(grounded && Input.GetAxis("Vertical") != 0)
         {
@@ -70,6 +117,7 @@ public class CarController : MonoBehaviour
         //control particle emissions
         emissionRate = Mathf.MoveTowards(emissionRate, 0f, emissionFadeSpeed * Time.deltaTime);
 
+        //dust emits from car tyres where where is turning or when vehicle is accelerating (not at full speed though)
         if(grounded && (Mathf.Abs(turnInput) > 0.5f || (theRB.velocity.magnitude < maxSpeed * 0.5f && theRB.velocity.magnitude != 0)))
         {
             emissionRate = maxEmission; 
@@ -80,6 +128,7 @@ public class CarController : MonoBehaviour
             emissionRate = 0;
         }
 
+        //
         for(int i = 0; i < dustTrail.Length; i++)
         {
             var emissionModule = dustTrail[i].emission;
@@ -149,9 +198,33 @@ public class CarController : MonoBehaviour
         //moved from Update() to FixedUpdate()
         transform.position = theRB.position;
         //also moved from update(0 to fixedUpdate()
+        /*//getAxis method
         if (grounded && Input.GetAxis("Vertical") != 0)
         {
             transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0f, turnInput * turnStrength * Time.deltaTime * Mathf.Sign(speedInput) * (theRB.velocity.magnitude / maxSpeed), 0f));
+        }*/
+
+
+        turnStrength = 220f;//return turn strength to baseline
+        if (grounded && moveDir[1] != 0)
+        {
+            //increases turn strength at low velocity to allow navigation of intersections
+            if (theRB.velocity.magnitude < maxSpeed * 0.3f && theRB.velocity.magnitude != 0)
+            {
+                turnStrength *= 5;
+            }
+            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0f, turnInput * turnStrength * Time.deltaTime * Mathf.Sign(speedInput) * (theRB.velocity.magnitude / maxSpeed), 0f));
         }
+
+        /*
+        if (Input.GetButtonDown("Horizontal"))
+            timer = Time.time;
+
+        if (Input.GetButton("Horizontal") && Time.time - timer > windUpTime)
+        {
+            Debug.Log(timer);
+        }*/
     }
+
+
 }
