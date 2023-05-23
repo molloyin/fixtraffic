@@ -18,12 +18,13 @@ public class TrafficController : MonoBehaviour
     [NonSerialized] public Waypoint[] destinationsWaypoints;
     
     public GameObject vehicleModel;
+    public GameObject busModel;
     
     public int simulationSeed = Guid.NewGuid().GetHashCode();
     public Random random;
     public bool IsInitialized { get; private set; }
 
-    [SerializeField] Camera mainCamera; //Field for the camera
+    Camera mainCamera; //Field for the camera
     private int carPtr;
     private int yOffset = 20;
 
