@@ -137,7 +137,7 @@ public class CarController : MonoBehaviour
 
         if(engineSound != null)
         {
-            engineSound.pitch = 1.0f + (theRB.velocity.magnitude / maxSpeed) * 2.5f;
+            engineSound.pitch = 1.0f + (theRB.velocity.magnitude / maxSpeed) * 2.9f;
 
         }
     }
