@@ -4,6 +4,7 @@ using Enums;
 using Unity.VisualScripting;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 
 /**
@@ -56,7 +57,7 @@ public class MobileObject : MonoBehaviour
         path = FindShortestPath();
         if (path.Length > 0)
         {
-            speed = path[0].speedLimit;
+            speed = path[0].currentSpeedLimit;
             baseSpeed = speed;
         }
 
@@ -81,11 +82,16 @@ public class MobileObject : MonoBehaviour
             float distanceBtWps = Vector3.Distance(path[currentIndex].transform.position,
                 nextWp.transform.position);
             float distanceWithWp = Vector3.Distance(transform.position, nextWp.transform.position);
-
+            float distanceWaypointDetector = distanceBtWps* sportiness > 20 ? 20 : distanceBtWps* sportiness;
+            
             float dist = IsObjectInFront(out MobileObject mobileObject);
             if (mobileObject != null)
             {
                 if (dist < 2)
+                {
+                    speed = 0;
+                }
+                else if (Math.Abs(dist - 2) < 0.1)
                 {
                     speed = mobileObject.speed;
                 }
@@ -95,26 +101,34 @@ public class MobileObject : MonoBehaviour
                         1, mobileObject.speed / baseSpeed);
                 }
             }
-            else if (distanceWithWp < distanceBtWps * sportiness)
+            else if (distanceWithWp < distanceWaypointDetector)
             {
-                speed = baseSpeed * Tools.Remap(distanceWithWp, distanceBtWps * sportiness, 0,
-                    1, nextWp.speedLimit / baseSpeed);
+                speed = baseSpeed * Tools.Remap(distanceWithWp, distanceWaypointDetector, 0,
+                    1, nextWp.currentSpeedLimit / baseSpeed);
             }
-
+            
             if (distanceWithWp < 1)
             {
                 currentIndex++;
+                speed = nextWp.currentSpeedLimit;
                 tParam = 0;
-                speed = nextWp.speedLimit;
                 baseSpeed = speed;
             }
         }
-
-        if (baseSpeed == 0 || float.IsNaN(speed)) return;
+        
+        if (float.IsNaN(speed))
+            speed = 0;
 
         if (currentIndex < path.Length - 1)
         {
             Waypoint current = path[currentIndex];
+
+            if (current.isInTrafficLights && current.currentSpeedLimit > 0 && speed == 0)
+            {
+                speed = current.currentSpeedLimit;
+                baseSpeed = current.currentSpeedLimit;
+            }
+            
             Vector3 destination = current.pathType is PathType.Straight
                 ? path[currentIndex + 1].transform.position
                 : current.GetPositionOnCurve(path[currentIndex + 1], tParam);
@@ -125,12 +139,6 @@ public class MobileObject : MonoBehaviour
         }
         else
         {
-            //Path is finished and we need to create a new path
-            // from = path[currentIndex];
-            // SetNewDestination();
-            // path = FindShortestPath();
-            // currentIndex = 0;
-
             if (this is Vehicle)
             {
                 controller.vehicles.Remove((Vehicle) this);
@@ -138,7 +146,7 @@ public class MobileObject : MonoBehaviour
             }
         }
     }
-    
+
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
@@ -151,7 +159,10 @@ public class MobileObject : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
+        {
             isStopped = false;
+            other.GetComponent<MobileObject>().isStopped = false;
+        }
     }
 
     private float IsObjectInFront(out MobileObject mobileObject)
@@ -161,16 +172,6 @@ public class MobileObject : MonoBehaviour
         mobileObject = detector ? hit.transform.GetComponent<MobileObject>() : null;
         return hit.distance;
     }
-
-    private void OnDrawGizmos()
-    {
-        if (isStopped)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(transform.position, 0.7f);
-        }
-    }
-
 
     /*
     This is am Implementation of dijkstra's algorithm in C# 
@@ -257,15 +258,5 @@ public class MobileObject : MonoBehaviour
         }
 
         return minIndex;
-    }
-
-
-    //Method is used to get random destination and set it to the sink
-    private void SetNewDestination()
-    {
-        do
-        {
-            to = controller.destinationsWaypoints[controller.random.Next(0, controller.destinationsWaypoints.Length)];
-        } while (to == from);
     }
 }

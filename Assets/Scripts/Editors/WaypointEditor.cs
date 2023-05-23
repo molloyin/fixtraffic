@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Editors
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(Waypoint))]
     public class WaypointEditor : Editor
     {
@@ -21,12 +22,43 @@ namespace Editors
         {
             int previousTypeIndex = pathType.enumValueIndex;
             bool previousShowPaths = showPaths.boolValue;
-            base.OnInspectorGUI();
-            serializedObject.Update();
 
-            if (previousTypeIndex != pathType.enumValueIndex) waypoint.UpdatePathType();
-            if (previousShowPaths != showPaths.boolValue) waypoint.TogglePaths();
+            if (Selection.gameObjects.Length > 1)
+            {
+                GUIStyle button = new GUIStyle(GUI.skin.button)
+                {
+                    normal =
+                    {
+                        textColor = new Color(1f, 1f, 1f, 1f)
+                    },
+                    fixedHeight = 32f,
+                    padding = new RectOffset(0, 0, 0, 0)
+                };
 
+                TrafficLights lights = waypoint.transform.parent.GetComponent<TrafficLights>();
+                if (lights != null)
+                {
+                    if (GUILayout.Button("Group waypoints", button, GUILayout.Width(128f)))
+                        lights.GroupWaypoints(); 
+                }
+                else
+                {
+                    if (GUILayout.Button("Add traffic lights", button, GUILayout.Width(128f)))
+                        Selection.activeObject = waypoint.controller.AddTrafficLights();
+                }
+            
+            }
+            else
+            {
+                base.OnInspectorGUI();
+                serializedObject.Update();
+
+                if (previousTypeIndex != pathType.enumValueIndex) waypoint.UpdatePathType();
+                if (previousShowPaths != showPaths.boolValue) waypoint.TogglePaths();
+            }
+            
+            
+            
             serializedObject.ApplyModifiedProperties();
         }
 
