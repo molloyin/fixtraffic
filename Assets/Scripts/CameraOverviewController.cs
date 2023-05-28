@@ -9,6 +9,8 @@ public class CameraOverviewController : MonoBehaviour
     public float panSpeed = 20.00f;
     public float panBorderThickness = 10;
     public float scrollSpeed = 20f;
+
+    public AudioSource track1, track2;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,5 +42,10 @@ public class CameraOverviewController : MonoBehaviour
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         loc.y += -scroll * scrollSpeed * 200 * Time.deltaTime;
         transform.position = loc;
+
+        if (isActiveAndEnabled)
+        {
+            track1.volume = 1.0f;
+        }
     }
 }
