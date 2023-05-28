@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 //controls overview camera
 
@@ -11,14 +12,15 @@ public class CameraOverviewController : MonoBehaviour
     public float panBorderThickness = 10;
     public float scrollSpeed = 20f;
     public bool musicOn;
-    [SerializeField] public KeyCode mute;
+    [SerializeField] public KeyCode muteKey;
 
     public AudioSource track1, track2;
+
     // Start is called before the first frame update
     void Start()
     {
         musicOn = true;
-        mute = KeyCode.M;
+        muteKey = KeyCode.M;
 
     }
 
@@ -50,26 +52,17 @@ public class CameraOverviewController : MonoBehaviour
 
         if (isActiveAndEnabled)
         {
-            if(Input.GetKey(mute))
-            {
-                Debug.Log("MUTE PRESSED");
-                MuteToggle();
-            }
-            
+                MuteToggle(); 
         }
     }
 
+
     public void MuteToggle()
     {
-            if (musicOn)
-            {
-                musicOn = false;
-                track1.volume = 0f;
-        } else if (!musicOn)
-            {
-                musicOn = true;
-                track1.volume = 1.0f;
+        if (Input.GetKeyDown(muteKey))
+        {
+            track1.mute = !track1.mute;
         }
-        
     }
+
 }
