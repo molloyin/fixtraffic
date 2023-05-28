@@ -32,7 +32,9 @@ public class CarController : MonoBehaviour
     public float maxEmission = 25f, emissionFadeSpeed = 20f;
     private float emissionRate;
 
-    public AudioSource engineSound;
+    public AudioSource engineSound, skidSound;
+    public float skidFadeSpeed;
+    
 
     public InputAction playerMovement;//pi
     Vector2 moveDir = Vector2.zero;//pi
@@ -139,6 +141,20 @@ public class CarController : MonoBehaviour
         {
             engineSound.pitch = 1.0f + (theRB.velocity.magnitude / maxSpeed) * 2.9f;
 
+        }
+
+        if(skidSound != null)
+        {
+            if((Mathf.Abs(turnInput) > 0.1) && speedInput != 0 && turnStrength > 300)
+            {
+                Debug.Log("TURN INPUT: "+ turnInput);
+                Debug.Log("SPEED INPUT: " + speedInput);
+                skidSound.volume = 1.0f;
+            }
+            else
+            {
+                skidSound.volume = Mathf.MoveTowards(skidSound.volume, 0f, skidFadeSpeed * Time.deltaTime);
+            }
         }
     }
 
