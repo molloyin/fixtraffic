@@ -32,19 +32,21 @@ public class CarController : MonoBehaviour
     public float maxEmission = 25f, emissionFadeSpeed = 20f;
     private float emissionRate;
 
-    public AudioSource engineSound;
+    public AudioSource engineSound, skidSound;
+    public float skidFadeSpeed;
+    
 
-    public InputAction playerMovement;//pi
-    Vector2 moveDir = Vector2.zero;//pi
+    public InputAction playerMovement;
+    Vector2 moveDir = Vector2.zero;
 
     public float timer;
 
-    public void OnEnable()//pi
+    public void OnEnable()
     {
         playerMovement.Enable();
     }
 
-    public void OnDisable()//pi
+    public void OnDisable()
     {
         playerMovement.Disable();
     }
@@ -64,23 +66,11 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        moveDir = playerMovement.ReadValue<Vector2>();//pi
+        //takes player input as Vector2
+        moveDir = playerMovement.ReadValue<Vector2>();
 
         speedInput = 0f;
 
-        //working controls
-
-        /*//getAxis method
-        if (Input.GetAxis("Vertical") > 0)
-        {
-            speedInput = Input.GetAxis("Vertical") * forwardAcceleration;
-
-        } else if(Input.GetAxis("Vertical") < 0)
-        {
-            speedInput = Input.GetAxis("Vertical") * reverseAcceleration;
-        }*/
-
-        //pi
         if (moveDir[1] > 0)
         {
             speedInput = moveDir[1] * forwardAcceleration;
@@ -91,38 +81,22 @@ public class CarController : MonoBehaviour
             speedInput = moveDir[1] * reverseAcceleration;
         }
 
+        turnInput = moveDir[0];
 
-        /*
-         changing control code         
-         */
-
-
-
-        //turnInput = Input.GetAxis("Horizontal");//getAxis method
-        turnInput = moveDir[0];//pi
-
-        /*
-        if(grounded && Input.GetAxis("Vertical") != 0)
-        {
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0f, turnInput * turnStrength * Time.deltaTime * Mathf.Sign(speedInput) * (theRB.velocity.magnitude / maxSpeed), 0f));
-        }*/
-
-        //turning wheels
+        //turning wheels on car model
         leftFrontWheel.localRotation = Quaternion.Euler(leftFrontWheel.localRotation.eulerAngles.x, (turnInput * maxWheelTurn - 180), leftFrontWheel.localRotation.eulerAngles.z);
         rightFrontWheel.localRotation = Quaternion.Euler(rightFrontWheel.localRotation.eulerAngles.x, (turnInput * maxWheelTurn), rightFrontWheel.localRotation.eulerAngles.z);
 
-        //car position set to sphere rigid body position
-        //transform.position = theRB.position;//moved to fixedUpdate() for camera smoothing
-
-        //control particle emissions
+        //control particle emissions with fade out
         emissionRate = Mathf.MoveTowards(emissionRate, 0f, emissionFadeSpeed * Time.deltaTime);
 
-        //dust emits from car tyres where where is turning or when vehicle is accelerating (not at full speed though)
+        //dust emits from car tyres where there is sharp turning or when vehicle is accelerating (not at full speed though)
         if(grounded && (Mathf.Abs(turnInput) > 0.5f || (theRB.velocity.magnitude < maxSpeed * 0.5f && theRB.velocity.magnitude != 0)))
         {
             emissionRate = maxEmission; 
         }
 
+        //dust emission stops given velocity
         if(theRB.velocity.magnitude <= 0.6f)
         {
             emissionRate = 0;
@@ -140,6 +114,22 @@ public class CarController : MonoBehaviour
             engineSound.pitch = 1.0f + (theRB.velocity.magnitude / maxSpeed) * 2.9f;
 
         }
+
+        PlaySkidSound();
+        /*
+        if(skidSound != null)
+        {
+            if((Mathf.Abs(turnInput) > 0.1) && speedInput != 0 && turnStrength > 300)
+            {
+                //Debug.Log("TURN INPUT: "+ turnInput);
+                //Debug.Log("SPEED INPUT: " + speedInput);
+                skidSound.volume = 1.0f;
+            }
+            else
+            {
+                skidSound.volume = Mathf.MoveTowards(skidSound.volume, 0f, skidFadeSpeed * Time.deltaTime);
+            }
+        }*/
     }
 
     private void FixedUpdate()
@@ -175,10 +165,10 @@ public class CarController : MonoBehaviour
         //accelerates car forward
         if (grounded)
         {
-
             theRB.drag = dragOnGround;//sets drag to the ground drag value
             theRB.AddForce(transform.forward * speedInput * 500f);//accelerates car forward
-        } else
+        }
+        else
         {
             theRB.drag = 0.05f;//sets drag to low value
             theRB.AddForce(-Vector3.up * gravityMod * 80f);//create downward grvitational force
@@ -190,20 +180,11 @@ public class CarController : MonoBehaviour
             theRB.velocity = theRB.velocity.normalized * maxSpeed;
         }
 
-        
-
         //remove debug code at the end
         Debug.Log(theRB.velocity.magnitude);
 
         //moved from Update() to FixedUpdate()
         transform.position = theRB.position;
-        //also moved from update(0 to fixedUpdate()
-        /*//getAxis method
-        if (grounded && Input.GetAxis("Vertical") != 0)
-        {
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0f, turnInput * turnStrength * Time.deltaTime * Mathf.Sign(speedInput) * (theRB.velocity.magnitude / maxSpeed), 0f));
-        }*/
-
 
         turnStrength = 220f;//return turn strength to baseline
         if (grounded && moveDir[1] != 0)
@@ -216,14 +197,23 @@ public class CarController : MonoBehaviour
             transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0f, turnInput * turnStrength * Time.deltaTime * Mathf.Sign(speedInput) * (theRB.velocity.magnitude / maxSpeed), 0f));
         }
 
-        /*
-        if (Input.GetButtonDown("Horizontal"))
-            timer = Time.time;
+    }
 
-        if (Input.GetButton("Horizontal") && Time.time - timer > windUpTime)
+    public void PlaySkidSound()
+    {
+        if (skidSound != null)
         {
-            Debug.Log(timer);
-        }*/
+            if ((Mathf.Abs(turnInput) > 0.1) && speedInput != 0 && turnStrength > 300)
+            {
+                //Debug.Log("TURN INPUT: "+ turnInput);
+                //Debug.Log("SPEED INPUT: " + speedInput);
+                skidSound.volume = 1.0f;
+            }
+            else
+            {
+                skidSound.volume = Mathf.MoveTowards(skidSound.volume, 0f, skidFadeSpeed * Time.deltaTime);
+            }
+        }
     }
 
 
