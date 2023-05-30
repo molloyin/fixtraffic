@@ -1,25 +1,38 @@
-# fixtraffic
+# Traffic Lights Suck
 
-Welcome to fixtraffic
-This Project contains a traffic simulator which feautures different types of vehicles driving in a city map. 
-This simulator also has a interactive play mode where you can drive around in a vehicle on the map amongst the traffic.
-The purpose of the simulator is to have a interactive traffic light settings so an optimal traffic light setup can be discovered by the user.
+Traffic Lights Suck is a traffic light and road network simulator with gamify features.
 
-Features
+## Installation
+
+Pull files from the repository on your computer.
+
+## Dependency
+
+You need to use Unity 2021.3.20f1 for opening and building the project in Unity.
+
+## Usage
+
+1. Open the project in Unity (2021.3.20f1)
+2. Be sure to open the "Main Menu" scene
+3. Run the Unity project and have fun
+
+## Features
+
 - Automatic vehicles driving on the roads following traffic rules
-- Single lane roads
-- 3 point and 4 point intersections
+- Road with multiple lanes
+- City with a complex road network including intersections, highways, single lane roads and so on.
 - Playable vehicle with effects
+- Customisable settings
+- Simulation systems for researchers
 
-Getting started:
-To start using the simulator in Unity follow the steps below
-1. Click the play button at the top of the screen to enter game mode
-2. Use the 'W' key to start spawning cars
-3. Use the 'Q' key to stop spawning cars
-4. Use the W, A, S, D keys to move the main camera around
-5. Scroll with 2 fingers on the mousepad to zoom in and out
+## Authors
 
-To start using play mode in Unity follow the steps below
-1. If not already in game mode, click the play button at the top of the screen to enter game mode
-2. Use the 'C' key to change the camera to the player car
-3. Use the keys U, J, H, K to move the car up, down, left or right
+Matthew Molloy
+
+Maega Loganathan
+
+Maxime Ruff
+
+Vinnie Limbrick
+
+Max Somerville
