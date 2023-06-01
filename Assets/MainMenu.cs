@@ -28,7 +28,7 @@ public class MainMenu : MonoBehaviour
         SceneManager.UnloadSceneAsync("Main_Menu");
 
         //Loading in game scene
-        SceneManager.LoadScene(gameScene);
+        SceneManager.LoadSceneAsync(gameScene);
 
     }
 
