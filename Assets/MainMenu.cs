@@ -31,4 +31,24 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene(gameScene);
 
     }
+
+
+
+    /**<summary>
+     * Opens up the options  page in the main menu
+     * </summary>
+     */
+    public void openOptions()
+    {
+        Debug.Log("Opening main menu");
+    }
+
+    /**<summary>
+     * Closes the main menu
+     * </summary>
+     */
+    public void closeOptions()
+    {
+        Debug.Log("Closing main menu");
+    }
 }
