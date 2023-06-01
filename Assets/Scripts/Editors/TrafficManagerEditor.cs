@@ -7,27 +7,17 @@ namespace Editors
     public class TrafficManagerEditor : Editor
     {
         private TrafficController controller;
-        private SerializedProperty vehicles;
-        private SerializedProperty matrix;
-        private SerializedProperty simulationSeed;
-        private SerializedProperty vehicleModel;
 
         private void OnEnable()
         {
             controller = (TrafficController) target;
-            vehicles = serializedObject.FindProperty("vehicles");
-            matrix = serializedObject.FindProperty("matrix");
-            simulationSeed = serializedObject.FindProperty("simulationSeed");
-            vehicleModel = serializedObject.FindProperty("vehicleModel");
         }
 
         public override void OnInspectorGUI()
         {
+            base.OnInspectorGUI();
+
             serializedObject.Update();
-            EditorGUILayout.PropertyField(vehicles);
-            EditorGUILayout.PropertyField(matrix);
-            EditorGUILayout.PropertyField(simulationSeed);
-            EditorGUILayout.PropertyField(vehicleModel);
             GUIStyle button = new GUIStyle(GUI.skin.button)
             {
                 normal =
