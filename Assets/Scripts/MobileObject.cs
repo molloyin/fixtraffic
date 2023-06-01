@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using Enums;
 using Unity.VisualScripting;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.UI;
 using Utils;
 
 /**
