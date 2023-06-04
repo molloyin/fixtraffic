@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class InGameMenuController : MonoBehaviour
 {
-    private bool gamePaused;
-    private float savedVolume;
+    public bool gamePaused;
+    public float savedVolume;
     [SerializeField] public AudioMixer mixer;
+    [SerializeField] public GameObject gameMenuCanvas;
+    [SerializeField] public GameObject menuPage;
+    [SerializeField] public GameObject optionsPage;
 
     // Start is called before the first frame update
     void Start()
@@ -34,8 +38,13 @@ public class InGameMenuController : MonoBehaviour
     }
 
     //Pauses the game
-    private void pauseGame()
+    public void pauseGame()
     {
+        //Setting menu as active
+        this.gameMenuCanvas.SetActive(true);
+        this.menuPage.SetActive(true);
+        this.optionsPage.SetActive(false);
+
         //Saving the game audio level
         mixer.GetFloat("MasterVolume", out this.savedVolume);
 
@@ -48,11 +57,25 @@ public class InGameMenuController : MonoBehaviour
     }
 
     //Resumes the game
-    private void resumeGame()
+    public void resumeGame()
     {
         Time.timeScale = 1;
 
+        //Setting menu as unactive
+        this.gameMenuCanvas.SetActive(false);
+        this.menuPage.SetActive(true);
+        this.optionsPage.SetActive(false);
+
         //Unmute sound effects
         mixer.SetFloat("MasterVolume", this.savedVolume);
+    }
+
+    public void backToMainMenu()
+    {
+        //Unloading main menu scene
+        SceneManager.UnloadSceneAsync("building_map");
+
+        //Loading in game scene
+        SceneManager.LoadSceneAsync("Main_menu");
     }
 }
