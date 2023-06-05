@@ -179,10 +179,7 @@ public class CarController : MonoBehaviour
         {
             theRB.velocity = theRB.velocity.normalized * maxSpeed;
         }
-
-        //remove debug code at the end
-        Debug.Log(theRB.velocity.magnitude);
-
+        
         //moved from Update() to FixedUpdate()
         transform.position = theRB.position;
 

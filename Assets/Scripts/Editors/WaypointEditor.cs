@@ -36,17 +36,21 @@ namespace Editors
                 };
 
                 TrafficLights lights = waypoint.transform.parent.GetComponent<TrafficLights>();
-                if (lights != null)
+                GroupLights group = waypoint.transform.parent.GetComponent<GroupLights>();
+
+                if (lights != null || group != null)
                 {
-                    if (GUILayout.Button("Group waypoints", button, GUILayout.Width(128f)))
-                        lights.GroupWaypoints(); 
+                    if (group == null && GUILayout.Button("Group waypoints", button, GUILayout.Width(128f)))
+                        lights.GroupWaypoints();
                 }
-                else
+                else if (waypoint.Lanes == null)
                 {
                     if (GUILayout.Button("Add traffic lights", button, GUILayout.Width(128f)))
                         Selection.activeObject = waypoint.controller.AddTrafficLights();
+
+                    if (GUILayout.Button("Group as lanes", button, GUILayout.Width(128f)))
+                        Selection.activeObject = GroupLanes.GroupWaypoints(waypoint.controller);
                 }
-            
             }
             else
             {
@@ -56,9 +60,8 @@ namespace Editors
                 if (previousTypeIndex != pathType.enumValueIndex) waypoint.UpdatePathType();
                 if (previousShowPaths != showPaths.boolValue) waypoint.TogglePaths();
             }
-            
-            
-            
+
+
             serializedObject.ApplyModifiedProperties();
         }
 
