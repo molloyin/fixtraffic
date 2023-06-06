@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Enums;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -73,6 +74,8 @@ public class MobileObject : MonoBehaviour
             speed = 0;
             return;
         }
+
+        isStopped = false;
 
         // Checks if the object has reached the next waypoint
         if (currentIndex < path.Length - 1)
@@ -173,6 +176,7 @@ public class MobileObject : MonoBehaviour
         if (currentIndex < path.Length - 1)
         {
             Waypoint current = path[currentIndex];
+            Waypoint next = path[currentIndex + 1];
 
             if (current.IsInTrafficLights && current.currentSpeedLimit > 0 && speed == 0)
             {
@@ -180,13 +184,17 @@ public class MobileObject : MonoBehaviour
                 baseSpeed = speed;
             }
 
-            Vector3 destination = current.pathType is PathType.Straight
-                ? path[currentIndex + 1].transform.position
-                : current.GetPositionOnCurve(path[currentIndex + 1], tParam);
+            bool canCurve = current.Lanes != null && next.Lanes != null &&
+                            current.Lanes.GetCurrentLane(current) == next.Lanes.GetCurrentLane(next);
+
+            Vector3 destination =
+                current.pathType is PathType.Straight || (!canCurve && current.pathType is PathType.Curved)
+                    ? next.transform.position
+                    : current.GetPositionOnCurve(next, tParam);
             transform.LookAt(destination);
             transform.Translate(0, 0, speed * Time.deltaTime);
             tParam += Time.deltaTime * speed / Vector3.Distance(current.transform.position,
-                path[currentIndex + 1].transform.position);
+                next.transform.position);
         }
         else
         {
@@ -200,10 +208,17 @@ public class MobileObject : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
+        if (!isStopped && other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
         {
             MobileObject mobileObject = other.GetComponent<MobileObject>();
-            if (mobileObject != null && !mobileObject.isStopped) isStopped = true;
+            if (mobileObject == null) return;
+
+            IsObjectInFront(out MobileObject front, 2f);
+            if (front == mobileObject && !mobileObject.isStopped)
+            {
+                isStopped = true;
+            }
+            // if (mobileObject != null && !mobileObject.isStopped) isStopped = true;
         }
     }
 
@@ -216,9 +231,9 @@ public class MobileObject : MonoBehaviour
         }
     }
 
-    private float IsObjectInFront(out MobileObject mobileObject)
+    private float IsObjectInFront(out MobileObject mobileObject, float distance = 10f)
     {
-        bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, 10f,
+        bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, distance,
             1 << LayerMask.NameToLayer("MobileObject"));
         mobileObject = detector ? hit.transform.GetComponent<MobileObject>() : null;
         return hit.distance;
