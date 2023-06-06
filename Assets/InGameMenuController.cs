@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
@@ -24,7 +22,8 @@ public class InGameMenuController : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            if(gamePaused)
+            Debug.Log("INPUT");
+            if (gamePaused)
             {
                 resumeGame();
                 gamePaused = false;
