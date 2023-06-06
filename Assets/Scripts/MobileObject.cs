@@ -184,11 +184,12 @@ public class MobileObject : MonoBehaviour
                 baseSpeed = speed;
             }
 
-            bool canCurve = current.Lanes != null && next.Lanes != null &&
+            bool inLanes = current.Lanes != null && next.Lanes != null;
+            bool canCurve = inLanes &&
                             current.Lanes.GetCurrentLane(current) == next.Lanes.GetCurrentLane(next);
 
             Vector3 destination =
-                current.pathType is PathType.Straight || (!canCurve && current.pathType is PathType.Curved)
+                current.pathType is PathType.Straight || (inLanes && !canCurve && current.pathType is PathType.Curved)
                     ? next.transform.position
                     : current.GetPositionOnCurve(next, tParam);
             transform.LookAt(destination);
