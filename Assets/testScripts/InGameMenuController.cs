@@ -44,11 +44,13 @@ public class InGameMenuController : MonoBehaviour
         this.menuPage.SetActive(true);
         this.optionsPage.SetActive(false);
 
-        //Saving the game audio level
-        mixer.GetFloat("MasterVolume", out this.savedVolume);
+        if(mixer != null)
+        {
+            mixer.GetFloat("MasterVolume", out this.savedVolume);    //Saving the game audio level
+            mixer.SetFloat("MasterVolume", -80f);   //Muting sound effects
+        }
 
-        //Muting sound effects
-        mixer.SetFloat("MasterVolume", -80f);
+        this.gamePaused = true;
 
         Time.timeScale = 0;
 
@@ -59,14 +61,18 @@ public class InGameMenuController : MonoBehaviour
     public void resumeGame()
     {
         Time.timeScale = 1;
+        this.gamePaused = false;
 
         //Setting menu as unactive
         this.gameMenuCanvas.SetActive(false);
         this.menuPage.SetActive(true);
         this.optionsPage.SetActive(false);
 
-        //Unmute sound effects
-        mixer.SetFloat("MasterVolume", this.savedVolume);
+        if(mixer != null)
+        {
+            //Unmute sound effects
+            mixer.SetFloat("MasterVolume", this.savedVolume);
+        }
     }
 
     public void backToMainMenu()

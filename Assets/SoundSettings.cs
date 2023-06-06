@@ -37,14 +37,18 @@ public class SoundSettings : MonoBehaviour
             value = 0.001f;
         }
 
-        //Checking to see if the game is paused if it is then we want to update the saved value
-        if(this.gameMenu.gamePaused || this.gameMenu == null)
+       if(this.masterMixer != null)
         {
-            this.gameMenu.savedVolume = Mathf.Log10(value / 100) * 20f;
-        } else
-        {
-            refreshSlider(value);
-            masterMixer.SetFloat("MasterVolume", Mathf.Log10(value / 100) * 20f);
+            //Checking to see if the game is paused if it is then we want to update the saved value
+            if (this.gameMenu.gamePaused || this.gameMenu == null)
+            {
+                this.gameMenu.savedVolume = Mathf.Log10(value / 100) * 20f;
+            }
+            else
+            {
+                refreshSlider(value);
+                masterMixer.SetFloat("MasterVolume", Mathf.Log10(value / 100) * 20f);
+            }
         }
         
     }
