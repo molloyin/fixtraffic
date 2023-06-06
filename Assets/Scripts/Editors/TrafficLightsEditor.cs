@@ -35,8 +35,4 @@ namespace Editors
         }
 
     }
-
-    public class UIStyle
-    {
-    }
 }

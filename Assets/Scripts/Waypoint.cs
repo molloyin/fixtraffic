@@ -54,14 +54,16 @@ public class Waypoint : MatrixNode
     private int currentSpawnAmount;
 
     [NonSerialized] public bool isStopped = true;
-    [NonSerialized] public bool isInTrafficLights;
+
+    public bool IsInTrafficLights => transform.GetComponentInParent<TrafficLights>() != null ||
+                                     transform.GetComponentInParent<GroupLights>() != null;
+
+    public GroupLanes Lanes => transform.GetComponentInParent<GroupLanes>();
 
     private IEnumerator Start()
     {
         currentSpawnAmount = spawnAmount;
-        isInTrafficLights = transform.parent.GetComponent<TrafficLights>() != null ||
-                            transform.parent.GetComponent<GroupLights>() != null;
-        currentSpeedLimit = isInTrafficLights ? 0 : speedLimit;
+        currentSpeedLimit = IsInTrafficLights ? 0 : speedLimit;
         yield return new WaitUntil(() => controller.IsInitialized);
     }
 
@@ -214,7 +216,8 @@ public class Waypoint : MatrixNode
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = isInTrafficLights && !isStopped ? Color.green : Color.red;
+        Gizmos.color = IsInTrafficLights && !isStopped ? Color.green : Color.red;
+        Gizmos.color = Lanes == null ? Gizmos.color : Color.magenta;
         var position = transform.position;
         Gizmos.DrawCube(position, new Vector3(1, 1, 1));
 

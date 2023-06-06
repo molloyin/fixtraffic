@@ -29,7 +29,7 @@ public class TrafficController : MonoBehaviour
     private int yOffset = 20;
 
     //Fields for spawning
-    private float spawnDelay = 5f; //In seconds
+    private float spawnDelay = 10f; //In seconds
     public bool defaultSpawnBehavior = false;
 
     private void Start()

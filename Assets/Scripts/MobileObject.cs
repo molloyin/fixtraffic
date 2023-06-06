@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Enums;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class MobileObject : MonoBehaviour
     // Starting waypoint
     public Waypoint from;
 
-    // Destination waypoint
+    // Destination waypointf
     public Waypoint to;
 
     public TrafficController controller;
@@ -33,18 +34,19 @@ public class MobileObject : MonoBehaviour
     // Current t parameter for the curve calculation
     private float tParam = 0;
 
-    [SerializeField] private float speed = 0;
+    [SerializeField] public float speed;
+    public float baseSpeed;
 
-    [SerializeField] private float baseSpeed = 0;
+    protected float Sportiness = 0;
 
-    protected float sportiness = 0;
-
-    protected new Collider collider;
+    protected Collider Collider;
 
     //Type of vehicle
     public VehicleType vehicleType;
 
     [SerializeField] private bool isStopped = false;
+
+    public int currentLane = 0;
 
     protected void Start()
     {
@@ -55,11 +57,11 @@ public class MobileObject : MonoBehaviour
         path = FindShortestPath();
         if (path.Length > 0)
         {
-            speed = path[0].currentSpeedLimit;
+            speed = path[0].currentSpeedLimit * Sportiness;
             baseSpeed = speed;
         }
 
-        collider.isTrigger = true;
+        Collider.isTrigger = true;
         Rigidbody rigidBody = this.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
     }
@@ -73,67 +75,127 @@ public class MobileObject : MonoBehaviour
             return;
         }
 
+        isStopped = false;
+
         // Checks if the object has reached the next waypoint
         if (currentIndex < path.Length - 1)
         {
             Waypoint nextWp = path[currentIndex + 1];
+            Waypoint currentWp = path[currentIndex];
+
             float distanceBtWps = Vector3.Distance(path[currentIndex].transform.position,
                 nextWp.transform.position);
             float distanceWithWp = Vector3.Distance(transform.position, nextWp.transform.position);
-            float distanceWaypointDetector = distanceBtWps* sportiness > 20 ? 20 : distanceBtWps* sportiness;
-            
-            float dist = IsObjectInFront(out MobileObject mobileObject);
-            if (mobileObject != null)
+            float distanceWaypointDetector = distanceBtWps * Sportiness > 20 ? 20 : distanceBtWps * Sportiness;
+
+            float dist = IsObjectInFront(out MobileObject otherMo);
+            if (otherMo != null)
             {
-                if (dist < 2)
+                bool checkDistance = true;
+                if (nextWp.Lanes != null && currentWp.Lanes != null && otherMo.currentLane == currentLane &&
+                    otherMo.speed < speed * 0.8)
                 {
-                    speed = 0;
+                    Waypoint newWp = nextWp.Lanes.GetSiblingWaypoint(this, true);
+                    if (newWp != null)
+                    {
+                        currentWp.Lanes.RemoveVehicle(this);
+                        currentLane += 1;
+                        currentWp.Lanes.AddVehicle(this);
+                        path[currentIndex + 1] = newWp;
+                        checkDistance = false;
+                    }
                 }
-                else if (Math.Abs(dist - 2) < 0.1)
+
+                if (checkDistance)
                 {
-                    speed = mobileObject.speed;
-                }
-                else
-                {
-                    speed = baseSpeed * Tools.Remap(dist, 10, 0,
-                        1, mobileObject.speed / baseSpeed);
+                    if (dist < 2)
+                    {
+                        speed = 0;
+                    }
+                    else if (Math.Abs(dist - 2) < 0.1)
+                    {
+                        speed = otherMo.speed;
+                    }
+                    else
+                    {
+                        speed = baseSpeed * Tools.Remap(dist, 10, 0,
+                            1, otherMo.speed / baseSpeed);
+                    }
                 }
             }
             else if (distanceWithWp < distanceWaypointDetector)
             {
                 speed = baseSpeed * Tools.Remap(distanceWithWp, distanceWaypointDetector, 0,
-                    1, nextWp.currentSpeedLimit / baseSpeed);
+                    1, (nextWp.currentSpeedLimit * Sportiness) / baseSpeed);
             }
-            
+
             if (distanceWithWp < 1)
             {
+                if (currentWp.Lanes != null)
+                    currentWp.Lanes.RemoveVehicle(this);
+
                 currentIndex++;
-                speed = nextWp.currentSpeedLimit;
-                tParam = 0;
+                speed = nextWp.currentSpeedLimit * Sportiness;
                 baseSpeed = speed;
+                tParam = 0;
+
+                if (nextWp.Lanes != null)
+                {
+                    if (currentWp.Lanes == null)
+                    {
+                        currentLane = nextWp.Lanes.GetCurrentLane(nextWp);
+                    }
+
+                    if (currentIndex + 1 < path.Length - 1 && path[currentIndex + 1].Lanes != null)
+                    {
+                        if (nextWp.Lanes.CanDownLane(this))
+                        {
+                            Waypoint newWp = path[currentIndex + 1].Lanes.GetSiblingWaypoint(this, false);
+                            if (newWp != null)
+                            {
+                                currentLane -= 1;
+                                path[currentIndex + 1] = newWp;
+                            }
+                        }
+                        else
+                        {
+                            path[currentIndex + 1] = path[currentIndex + 1].Lanes.GetWaypoint(this);
+                        }
+                    }
+
+                    nextWp.Lanes.AddVehicle(this);
+                }
+                else
+                    currentLane = 0;
             }
         }
-        
+
         if (float.IsNaN(speed))
             speed = 0;
 
         if (currentIndex < path.Length - 1)
         {
             Waypoint current = path[currentIndex];
+            Waypoint next = path[currentIndex + 1];
 
-            if (current.isInTrafficLights && current.currentSpeedLimit > 0 && speed == 0)
+            if (current.IsInTrafficLights && current.currentSpeedLimit > 0 && speed == 0)
             {
-                speed = current.currentSpeedLimit;
-                baseSpeed = current.currentSpeedLimit;
+                speed = current.currentSpeedLimit * Sportiness;
+                baseSpeed = speed;
             }
-            
-            Vector3 destination = current.pathType is PathType.Straight
-                ? path[currentIndex + 1].transform.position
-                : current.GetPositionOnCurve(path[currentIndex + 1], tParam);
+
+            bool inLanes = current.Lanes != null && next.Lanes != null;
+            bool canCurve = inLanes &&
+                            current.Lanes.GetCurrentLane(current) == next.Lanes.GetCurrentLane(next);
+
+            Vector3 destination =
+                current.pathType is PathType.Straight || (inLanes && !canCurve && current.pathType is PathType.Curved)
+                    ? next.transform.position
+                    : current.GetPositionOnCurve(next, tParam);
             transform.LookAt(destination);
             transform.Translate(0, 0, speed * Time.deltaTime);
             tParam += Time.deltaTime * speed / Vector3.Distance(current.transform.position,
-                path[currentIndex + 1].transform.position);
+                next.transform.position);
         }
         else
         {
@@ -147,10 +209,17 @@ public class MobileObject : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
+        if (!isStopped && other.gameObject.layer == LayerMask.NameToLayer("MobileObject"))
         {
             MobileObject mobileObject = other.GetComponent<MobileObject>();
-            if (mobileObject != null && !mobileObject.isStopped) isStopped = true;
+            if (mobileObject == null) return;
+
+            IsObjectInFront(out MobileObject front, 2f);
+            if (front == mobileObject && !mobileObject.isStopped)
+            {
+                isStopped = true;
+            }
+            // if (mobileObject != null && !mobileObject.isStopped) isStopped = true;
         }
     }
 
@@ -163,21 +232,15 @@ public class MobileObject : MonoBehaviour
         }
     }
 
-    private float IsObjectInFront(out MobileObject mobileObject)
+    private float IsObjectInFront(out MobileObject mobileObject, float distance = 10f)
     {
-        bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, 10f,
+        bool detector = Physics.Raycast(transform.position, transform.forward, out var hit, distance,
             1 << LayerMask.NameToLayer("MobileObject"));
         mobileObject = detector ? hit.transform.GetComponent<MobileObject>() : null;
         return hit.distance;
     }
 
-    /*
-    This is am Implementation of dijkstra's algorithm in C# 
-    This takes int a 2D array "int[,] matrix" which should be
-    an adjacnecy matrix for the graph.
-    The "int source", and "int sink" are the start and finish nodes
-    for the algorihtm to find the shortest path between
-*/
+
     public Waypoint[] FindShortestPath()
     {
         var matrix = controller.matrix;
